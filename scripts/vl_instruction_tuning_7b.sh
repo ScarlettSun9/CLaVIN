@@ -1,8 +1,8 @@
 torchrun --nproc_per_node 1 train.py \
     --llm_model 7B\
-    --llama_model_path ../meta-llama-2/llama-2-7b/ \
-    --tokenizer_path ../Tokenizer/merged_tokenizer_hf/ \
-    --data_path ../PT_Dataset/ \
+    --llama_model_path ./llama/llama-2-7b/ \
+    --tokenizer_path ./tokenizer/merged_tokenizer_hf \
+    --data_path ./data/PT_Dataset/ \
     --max_seq_len 512 \
     --batch_size 1 \
     --accum_iter 1 \
