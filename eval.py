@@ -232,9 +232,9 @@ def print_scores(scores):
 
 def load(
     ckpt_dir: str,
-llm_model:str,
+    llm_model:str,
     tokenizer_path: str,
-    adapter_path: str,
+    adapter_path: str, ##############################
     local_rank: int,
     world_size: int,
     max_seq_len: int,
@@ -253,7 +253,7 @@ llm_model:str,
     checkpoint, tokenizer, params = _load_and_redistribute_checkpoint(ckpt_dir, llm_model)
 
     print("Loading")
-    adapter_checkpoint = torch.load(adapter_path, map_location="cpu")
+    adapter_checkpoint = torch.load(adapter_path, map_location="cpu") ##################################
 
 
     model_args: ModelArgs = ModelArgs(

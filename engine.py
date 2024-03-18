@@ -34,6 +34,7 @@ def train_one_epoch(model: torch.nn.Module,
     prefix_nonimg = torch.tensor(data_loader.dataset.tokenizer.encode("Image: N/A", bos=False, eos=False), dtype=torch.int64)
 
     for data_iter_step, (examples, labels, example_mask,images,indicators) in enumerate(metric_logger.log_every(data_loader, print_freq, header)):
+        examples, labels, example_mask, images, indicators = examples.to(device), labels.to(device), example_mask.to(device), images.to(device), indicators.to(device)
         # we use a per iteration (instead of per epoch) lr scheduler
         if data_iter_step % accum_iter == 0:
             lr_sched.adjust_learning_rate(optimizer, data_iter_step / len(data_loader) + epoch, args)
