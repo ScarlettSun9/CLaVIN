@@ -213,18 +213,19 @@ class PretrainDataSet(Data.Dataset):
         text = self.data[idx]
         image_id = self.imageIDs[idx]
         image_name = image_id + '.jpg'
-        assumed_image_path = os.path.join(self.data_path, image_name)
+        assumed_image_path = os.path.join(self.args.data_path, image_name)
         if os.path.exists(assumed_image_path):
-          image = Image.open(assumed_image_path).convert('RGB')
-          indicator = 1
+            image = Image.open(assumed_image_path).convert('RGB')
+            image = self.transforms(image)
+            indicator = 1
         else:
-          image = torch.Tensor(torch.zeros(3,224,224).float())
-          indicator = 0
+            image = torch.Tensor(torch.zeros(3,224,224).float())
+            indicator = 0
 
         # print(prompt_question,prompt_answer)
         example, labels, example_mask, label_mask=self.tokenize(text)
 
-        return example, labels, example_mask, image,indicator
+        return example, labels, example_mask, image, indicator
 
     def __len__(self):
         return len(self.qids)

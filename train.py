@@ -109,6 +109,7 @@ def get_args_parser():
     parser.set_defaults(pin_mem=True)
 
     # distributed training parameters
+    parser.add_argument('--distributed', action='store_true', default=False)
     parser.add_argument('--world_size', default=1, type=int,
                         help='number of distributed processes')
     parser.add_argument('--local_rank', default=-1, type=int)
@@ -137,7 +138,7 @@ def get_args_parser():
 
 def main(args):
 
-    misc.init_distributed_mode(args) # Load all the arguments into distributed mode.
+    # misc.init_distributed_mode(args) # Load all the arguments into distributed mode.
 
     print('job dir: {}'.format(os.path.dirname(os.path.realpath(__file__))))
     print("{}".format(args).replace(', ', ',\n'))
@@ -168,11 +169,13 @@ def main(args):
 
     num_tasks = misc.get_world_size()
     global_rank = misc.get_rank()
+    """
     sampler_train = torch.utils.data.DistributedSampler(
         dataset_train, num_replicas=num_tasks, rank=global_rank, shuffle=True
     )
 
     print("Sampler_train = %s" % str(sampler_train))
+    """
 
     if global_rank == 0 and args.log_dir is not None:   # ./output_dir - path where to tensorboard log
         os.makedirs(args.log_dir, exist_ok=True)
@@ -181,7 +184,8 @@ def main(args):
         log_writer = None
 
     data_loader_train = torch.utils.data.DataLoader(
-        dataset_train, sampler=sampler_train,
+        dataset_train,
+        shuffle=True,
         batch_size=args.batch_size,
         num_workers=args.num_workers,
         pin_memory=args.pin_mem,
@@ -189,6 +193,7 @@ def main(args):
         generator=g,
 
     )
+    # If sampler_train: sampler=sampler_train should be added to data_loader_train
 
 
 
@@ -205,6 +210,7 @@ def main(args):
         print(name, param.dtype)
 
     model_without_ddp = model   # ddp = distributed data parallel
+    model_without_ddp.to(device)
 
     #for debug. print the model.
     # print("Model = %s" % str(model_without_ddp))
