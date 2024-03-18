@@ -19,12 +19,12 @@ from typing import Tuple
 def parse_args():
     parser = argparse.ArgumentParser(description="Demo")
     parser.add_argument("--server_name", type=str, default="127.0.0.1", help="server name")
-    parser.add_argument("--ckpt_dir", type=str, default="../data/weights/", help="dir of pre-trained weights.")
-    parser.add_argument("--llm_model", type=str, default="13B", help="the type of llm.")
+    parser.add_argument("--ckpt_dir", type=str, default="./LaVIN-7B-VLIT", help="dir of pre-trained weights.")
+    parser.add_argument("--llm_model", type=str, default="7B", help="the type of llm.")
     parser.add_argument("--max_seq_len", type=int, default=512, help="decoder length")
     parser.add_argument('--adapter_type', type=str, default='attn', metavar='LENGTH',choices=['block','attn'],
                         help='the insert position  of adapter layer')
-    parser.add_argument('--adapter_path', type=str, default='./15-eph-pretrain.pth',  help='path of pre-trained adapter')
+    parser.add_argument('--adapter_path', type=str, default='./15-eph-pretrain.pth',  help='path of pre-trained adapter') ###############??????????????????????####################################
     parser.add_argument('--temperature', type=float, default=5., metavar='LENGTH',
                         help='the temperature of router')
     parser.add_argument('--use_vicuna',  action='store_true',   help='use vicuna weights')
@@ -73,7 +73,7 @@ local_rank, world_size = setup_model_parallel()
 lavin=load(
     ckpt_dir=args.ckpt_dir,
     llm_model=args.llm_model,
-    adapter_path=args.adapter_path,
+    adapter_path=args.adapter_path, #######################
     max_seq_len=512,
     max_batch_size=4,
     adapter_type='attn',
