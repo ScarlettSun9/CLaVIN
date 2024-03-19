@@ -41,7 +41,7 @@ def train_one_epoch(model: torch.nn.Module,
 
         prefix_img=prefix_img.to(examples.device)
         prefix_nonimg=prefix_nonimg.to(examples.device)
-        c_loss = model(examples, labels,images=images, prefix_img=prefix_img, prefix_nonimg=prefix_nonimg,img_indicators=indicators)
+        c_loss = model(examples, labels, images=images, prefix_img=prefix_img, prefix_nonimg=prefix_nonimg,img_indicators=indicators)
         loss = c_loss
         loss_value = loss.item()
         c_loss_value = c_loss.item()
@@ -53,8 +53,12 @@ def train_one_epoch(model: torch.nn.Module,
 
         loss = loss/accum_iter
 
-        loss_scaler(loss, optimizer, parameters=model.parameters(),
-                    update_grad=(data_iter_step + 1) % accum_iter == 0,clip_grad=args.clip_grad)
+        #if loss.dype == torch.float16:
+            #continue
+        #else:
+        loss_scaler(loss, optimizer, parameters=model.parameters(), 
+                    update_grad=(data_iter_step + 1) % accum_iter == 0, clip_grad=args.clip_grad)
+            
         if (data_iter_step + 1) % accum_iter == 0:
             optimizer.zero_grad()
 

@@ -36,6 +36,7 @@ class RepAdapter_Router(nn.Module):
         nn.init.zeros_(self.conv_B.weight)
         nn.init.zeros_(self.conv_B.bias)
 
+        # Actually conv_C is conv_A. The two adapters share the same downsampling matrix.
 
         nn.init.zeros_(self.conv_D.weight)
         nn.init.zeros_(self.conv_D.bias)
@@ -46,7 +47,8 @@ class RepAdapter_Router(nn.Module):
                 weights=torch.softmax(self.expert_weights(x[:,0])/self.t,-1).half()
             x=x.transpose(1,2)
             x_=self.dropout(self.conv_A(x))
-            x=self.conv_B(x_)*self.scale*weights[:,0,None,None]+self.conv_D(x_)*self.scale*weights[:,1,None,None]+x
+            x=self.conv_B(x_)*self.scale*weights[:,0,None,None]+self.conv_D(x_)*self.scale*weights[:,1,None,None]+x 
+            # Z′ = Z + s · router((fa1 (Z), fa2 (Z); fw(tm))
             x=x.transpose(1,2).contiguous()
         return x
 
@@ -156,7 +158,7 @@ def set_MMAdapter(model, method, dim=8, s=1, set_forward=True,t=10,gradient_chec
             if type(_) == lavin.model.TransformerBlock or type(_) == lavin.eval_model.TransformerBlock:
                 _.adapter_attn = RepAdapter_Router(_.dim,hidden_dim=dim,scale=s,t=t)
                 _.s = s
-                _.t=t
+                _.t = t
                 _.gradient_checkpointing = gradient_checkpointing
                 if type(_) == lavin.eval_model.TransformerBlock:
                     bound_method = forward_llama_attn_cache.__get__(_, _.__class__)

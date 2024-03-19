@@ -4,3 +4,4 @@
 from .generator import LaVIN_Generator
 from .model import ModelArgs, Transformer
 from .tokenizer import Tokenizer
+from .model_lora import Transformer_LoRA

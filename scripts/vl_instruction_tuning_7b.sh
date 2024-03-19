@@ -18,4 +18,5 @@ torchrun --nproc_per_node 1 train.py \
     --prompt_format QCM-ALE \
     --temperature 5.\
     --visual_adapter_type router \
+    --peft_type lora\
     --do_pretrain

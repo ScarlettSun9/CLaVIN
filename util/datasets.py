@@ -212,7 +212,7 @@ class PretrainDataSet(Data.Dataset):
  
         text = self.data[idx]
         image_id = self.imageIDs[idx]
-        image_name = image_id + '.jpg'
+        image_name = str(image_id) + '.jpg'
         assumed_image_path = os.path.join(self.args.data_path, image_name)
         if os.path.exists(assumed_image_path):
             image = Image.open(assumed_image_path).convert('RGB')

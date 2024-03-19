@@ -17,6 +17,7 @@ from engine import train_one_epoch
 
 from util.datasets import ScienceQADataSet,InstrcutDataSet, PretrainDataSet
 from lavin.mm_adaptation import LaVIN
+from lavin.mm_adaptation_lora import LaVIN_LoRA
 import random
 import bitsandbytes as bnb
 
@@ -42,7 +43,11 @@ def get_args_parser():
     parser.add_argument('--use_vicuna',  action='store_true',   help='use vicuna weights')
 
     parser.add_argument('--cpu_load',  action='store_true',   help='load the model on cpu and avoid OOM on gpu')
-
+    
+    # Change PEFT type, either RepAdapter or LoRA.
+    parser.add_argument('--peft_type', type=str, default='repadapter', metavar='LENGTH', choices=['repadapter', 'lora'],
+                       help='Choose PEFT type, either RepAdapter or lora.')
+    
     #block is not supported now.
     parser.add_argument('--adapter_type', type=str, default='attn', metavar='LENGTH',choices=['block','attn'],
                         help='the insert position  of adapter layer')
@@ -199,10 +204,15 @@ def main(args):
 
     
     # define the model
-    model = LaVIN(args)
+    if args.peft_type == 'lora':
+        model = LaVIN_LoRA(args)
+    else:
+        model = LaVIN(args)
 
 
     model.to(device)
+    
+    print(model.named_parameters())
 
     #for debug.   print the data type.
     for name, param in model.named_parameters():

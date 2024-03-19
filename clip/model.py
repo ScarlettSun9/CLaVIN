@@ -6,6 +6,8 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
+from torch.cuda.amp import autocast
+
 
 class Bottleneck(nn.Module):
     expansion = 4
@@ -158,8 +160,8 @@ class LayerNorm(nn.LayerNorm):
     """Subclass torch's LayerNorm to handle fp16."""
 
     def forward(self, x: torch.Tensor):
-        orig_type = x.dtype
-        ret = super().forward(x.type(torch.float32))
+        orig_type = x.dtype      
+        ret = super().forward(x.type(torch.float32))        
         return ret.type(orig_type)
 
 
@@ -183,13 +185,15 @@ class ResidualAttentionBlock(nn.Module):
         self.attn_mask = attn_mask
 
     def attention(self, x: torch.Tensor):
-        self.attn_mask = self.attn_mask.to(dtype=x.dtype, device=x.device) if self.attn_mask is not None else None
-        return self.attn(x, x, x, need_weights=False, attn_mask=self.attn_mask)[0]
+        with autocast():
+            self.attn_mask = self.attn_mask.to(dtype=x.dtype, device=x.device) if self.attn_mask is not None else None
+            return self.attn(x, x, x, need_weights=False, attn_mask=self.attn_mask)[0]
 
     def forward(self, x: torch.Tensor):
-        x = x + self.attention(self.ln_1(x))
-        x = x + self.mlp(self.ln_2(x))
-        return x
+        with autocast():
+            x = x + self.attention(self.ln_1(x))
+            x = x + self.mlp(self.ln_2(x))
+            return x
 
 
 class Transformer(nn.Module):
