@@ -142,8 +142,9 @@ def get_args_parser():
 
 
 def main(args):
-
-    # misc.init_distributed_mode(args) # Load all the arguments into distributed mode.
+    
+    if args.distributed:
+        misc.init_distributed_mode(args) # Load all the arguments into distributed mode.
 
     print('job dir: {}'.format(os.path.dirname(os.path.realpath(__file__))))
     print("{}".format(args).replace(', ', ',\n'))
@@ -174,13 +175,16 @@ def main(args):
 
     num_tasks = misc.get_world_size()
     global_rank = misc.get_rank()
-    """
-    sampler_train = torch.utils.data.DistributedSampler(
-        dataset_train, num_replicas=num_tasks, rank=global_rank, shuffle=True
-    )
+    
+    if args.distributed:
+        sampler_train = torch.utils.data.DistributedSampler(
+            dataset_train, num_replicas=num_tasks, rank=global_rank, shuffle=True
+        )
 
-    print("Sampler_train = %s" % str(sampler_train))
-    """
+        print("Sampler_train = %s" % str(sampler_train))
+    else:
+        pass
+    
 
     if global_rank == 0 and args.log_dir is not None:   # ./output_dir - path where to tensorboard log
         os.makedirs(args.log_dir, exist_ok=True)
@@ -188,16 +192,27 @@ def main(args):
     else:
         log_writer = None
 
-    data_loader_train = torch.utils.data.DataLoader(
-        dataset_train,
-        shuffle=True,
-        batch_size=args.batch_size,
-        num_workers=args.num_workers,
-        pin_memory=args.pin_mem,
-        drop_last=True,
-        generator=g,
-
-    )
+    if args.distributed:
+        data_loader_train = torch.utils.data.DataLoader(
+            dataset_train,
+            sampler = sampler_train,
+            shuffle=True,
+            batch_size=args.batch_size,
+            num_workers=args.num_workers,
+            pin_memory=args.pin_mem,
+            drop_last=True,
+            generator=g,
+        )
+    else:
+        data_loader_train = torch.utils.data.DataLoader(
+            dataset_train,
+            shuffle=True,
+            batch_size=args.batch_size,
+            num_workers=args.num_workers,
+            pin_memory=args.pin_mem,
+            drop_last=True,
+            generator=g,
+        )
     # If sampler_train: sampler=sampler_train should be added to data_loader_train
 
 

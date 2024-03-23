@@ -180,8 +180,8 @@ class PretrainDataSet(Data.Dataset):
         # --------------------------
         # ---- Raw data loading ---
         # --------------------------
-        self.data = pd.read_csv(os.path.join(args.data_path, 'pt_test_data.csv'))['text'].tolist()
-        self.imageIDs = pd.read_csv(os.path.join(args.data_path, 'pt_test_data.csv'))['image_id'].tolist()
+        self.data = pd.read_csv(os.path.join(args.data_path, 'PT_total_final.csv'))['content'].tolist()
+        self.imageIDs = pd.read_csv(os.path.join(args.data_path, 'PT_total_final.csv'))['img'].tolist()
 
         self.tokenizer = Tokenizer(tokenizer_path + '/tokenizer.model')
         self.max_words = max_words
@@ -212,8 +212,9 @@ class PretrainDataSet(Data.Dataset):
  
         text = self.data[idx]
         image_id = self.imageIDs[idx]
-        image_name = str(image_id) + '.jpg'
-        assumed_image_path = os.path.join(self.args.data_path, image_name)
+        image_name = str(image_id)
+        image_folder = os.path.join(self.args.data_path, 'PT_Dataset')
+        assumed_image_path = os.path.join(image_folder, image_name)
         if os.path.exists(assumed_image_path):
             image = Image.open(assumed_image_path).convert('RGB')
             image = self.transforms(image)

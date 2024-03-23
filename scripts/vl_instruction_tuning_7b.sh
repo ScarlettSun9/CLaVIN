@@ -1,12 +1,12 @@
-torchrun --nproc_per_node 1 train.py \
+torchrun --nproc_per_node 2 --master_port 12345 train.py \
     --llm_model 7B\
     --llama_model_path ../autodl-tmp/llama-2-7b/ \
     --tokenizer_path ./tokenizer/ \
-    --data_path ../autodl-tmp/PT_dataset/ \
+    --data_path ../autodl-tmp/ \
     --max_seq_len 512 \
     --batch_size 1 \
     --accum_iter 1 \
-    --epochs 3 \
+    --epochs 1 \
     --warmup_epochs 0.1 \
     --blr 9e-3 \
     --weight_decay 0.02 \
