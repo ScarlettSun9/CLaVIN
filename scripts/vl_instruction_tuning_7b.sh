@@ -1,6 +1,6 @@
 torchrun --nproc_per_node 2 --master_port 12345 train.py \
     --llm_model 7B\
-    --llama_model_path ../autodl-tmp/llama-2-7b/ \
+    --llama_model_path ../autodl-tmp/llama-7b/ \
     --tokenizer_path ./tokenizer/ \
     --data_path ../autodl-tmp/ \
     --max_seq_len 512 \
