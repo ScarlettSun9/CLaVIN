@@ -19,5 +19,4 @@ torchrun --nproc_per_node 2 --master_port 12345 train.py \
     --temperature 5.\
     --visual_adapter_type router \
     --peft_type repadapter\
-    --distributed \
     --do_pretrain
