@@ -10,6 +10,7 @@ import torch
 import torch.backends.cudnn as cudnn
 from torch.utils.tensorboard import SummaryWriter
 import timm.optim.optim_factory as optim_factory
+from torch.nn.utils import clip_grad_norm_  # deal with NaN encountered. 
 
 import util.misc as misc
 from util.misc import NativeScalerWithGradNormCount as NativeScaler
@@ -20,6 +21,7 @@ from lavin.mm_adaptation import LaVIN
 from lavin.mm_adaptation_lora import LaVIN_LoRA
 import random
 import bitsandbytes as bnb
+
 
 def get_args_parser():
     parser = argparse.ArgumentParser('MAE pre-training', add_help=False)
@@ -236,6 +238,9 @@ def main(args):
 
     model_without_ddp = model   # ddp = distributed data parallel
     model_without_ddp.to(device)
+    
+    clip_grad_norm_(model.parameters(), max_norm=1.0) # NaN encountered
+    clip_grad_norm_(model_without_ddp.parameters(), max_norm=1.0) # NaN encountered
 
     #for debug. print the model.
     # print("Model = %s" % str(model_without_ddp))

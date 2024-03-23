@@ -89,6 +89,7 @@ def LaVIN(args):
     )
 
     model_args.vocab_size = tokenizer.n_words
+    model_args.distribution = args.distributed
 
     if args.cpu_load:
         #cpu load is slow, but is friendly for GPU with limited memory.
