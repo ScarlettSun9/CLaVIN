@@ -210,15 +210,21 @@ class PretrainDataSet(Data.Dataset):
 
     def __getitem__(self, idx):
  
-        text = self.data[idx]
+        text = str(self.data[idx])
+        if text == 'nan':
+            text = '请讨论和舆情有关的内容，谢谢！'
         image_id = self.imageIDs[idx]
         image_name = str(image_id)
         image_folder = os.path.join(self.args.data_path, 'PT_Dataset')
         assumed_image_path = os.path.join(image_folder, image_name)
         if os.path.exists(assumed_image_path):
-            image = Image.open(assumed_image_path).convert('RGB')
-            image = self.transforms(image)
-            indicator = 1
+            try:
+                image = Image.open(assumed_image_path).convert('RGB')
+                image = self.transforms(image)
+                indicator = 1
+            except:
+                image = torch.Tensor(torch.zeros(3,224,224).float())
+                indicator = 0
         else:
             image = torch.Tensor(torch.zeros(3,224,224).float())
             indicator = 0

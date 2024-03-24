@@ -4,9 +4,9 @@ torchrun --nproc_per_node 2 --master_port 12345 train.py \
     --tokenizer_path ./tokenizer/ \
     --data_path ../autodl-tmp/ \
     --max_seq_len 512 \
-    --batch_size 1 \
+    --batch_size 2 \
     --accum_iter 1 \
-    --epochs 1 \
+    --epochs 5 \
     --warmup_epochs 0.1 \
     --blr 9e-3 \
     --weight_decay 0.02 \
@@ -19,4 +19,5 @@ torchrun --nproc_per_node 2 --master_port 12345 train.py \
     --temperature 5.\
     --visual_adapter_type router \
     --peft_type repadapter\
+    --distributed \
     --do_pretrain
