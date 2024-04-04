@@ -1,24 +1,23 @@
-torchrun --nproc_per_node 2 --master_port 12345 train.py \
-    --llm_model 7B\
+CUDA_VISIBLE_DEVICES=0,1 torchrun --nproc_per_node 2 --master_port 11111 train.py \
+    --llm_model 7B \
     --llama_model_path ../autodl-tmp/llama-2-7b/ \
     --tokenizer_path ./tokenizer/ \
     --data_path ../autodl-tmp/ \
     --max_seq_len 512 \
-    --batch_size 4 \
-    --accum_iter 1 \
-    --epochs 3 \
-    --warmup_epochs 0.1 \
+    --batch_size 2 \
+    --accum_iter 4 \
+    --epochs 1 \
+    --warmup_epochs 2 \
     --blr 9e-3 \
     --weight_decay 0.02 \
-    --output_dir ./LaVIN-7B-VLIT-lora/\
+    --output_dir ./CLaVIN-7B/\
     --adapter_type attn\
     --adapter_dim 8\
     --adapter_scale 1\
     --n_prompt 6 \
     --prompt_format QCM-ALE \
-    --temperature 5.\
+    --temperature 10.\
     --visual_adapter_type router \
     --peft_type lora\
     --distributed \
-    --do_pretrain \
-    --resume ./LaVIN-7B-VLIT-lora/checkpoint-5.pth
+    --resume ./LaVIN-7B-VLIT/checkpoint-4.pth

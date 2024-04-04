@@ -2,6 +2,7 @@ import torch
 import json
 from lavin import ModelArgs, Tokenizer, Transformer
 from lavin import Transformer_LoRA
+# from lavin import Transformer
 from lavin.mm_adapter import set_MMAdapter,set_Clip_Adapter
 from pathlib import Path
 from util.apply_delta import apply_model_delta_online
@@ -92,27 +93,15 @@ def LaVIN_LoRA(args):
     else:
         torch.set_default_tensor_type(torch.cuda.HalfTensor)
     
+    # llama = Transformer_LoRA(model_args)
     llama = Transformer_LoRA(model_args)
     
     # delete language encoder
     del llama.backbone.transformer
     
     
-    print('⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️')
-    print('⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️')
-    print('⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️')
-    for name, param in llama.named_parameters():
-        print(f"Layer: {name} | Size: {param.size()} | Trainable: {param.requires_grad}")
-    print('⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️')
-    print('⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️')
-    print('⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️⭐️')
-    
-        
-    print('\n\n\n')
-
-    
     # Config for the LoRA Injection via PEFT
-    lora_config = LoraConfig(r=2, # rank dimension of the LoRA injected matrices
+    lora_config = LoraConfig(r=4, # rank dimension of the LoRA injected matrices
                              lora_alpha=8, # parameter for scaling
                              target_modules=['wq', 'wv'], # be precise about dense because classifier has dense too
                              lora_dropout=0.1, # dropout probability for layers

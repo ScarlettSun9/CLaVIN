@@ -100,8 +100,8 @@ def create_training_example(format, question, context, choice, answer, lecture, 
     ## Inputs
     if input_format == "CQM":
         input = f"Context: {context}\nQuestion: {question}\nOptions: {choice}\n"
-    elif input_format == "QCM":
-        input = f"Question: {question}\nContext: {context}\nOptions: {choice}\n"
+    elif input_format == "QCM": 
+        input = f"Question: {question}\nContext: {context}\nOptions: {choice}\n" ###✅ question + hint + caption + choice
     # upper bound experiment
     elif input_format == "QCML":
         input = f"Question: {question}\nContext: {context}\nOptions: {choice}\nBECAUSE: {lecture}\n"
@@ -130,7 +130,7 @@ def create_training_example(format, question, context, choice, answer, lecture, 
     elif output_format == 'AE':
         output = f"The answer is {answer}. BECAUSE: {lecture}"
     elif output_format == 'ALE':
-        output = f"The answer is {answer}. BECAUSE: {lecture} {solution}"
+        output = f"The answer is {answer}. BECAUSE: {lecture} {solution}" ###✅ answer + lecture + solution 
     elif output_format == 'AEL':
         output = f"The answer is {answer}. BECAUSE: {solution} {lecture}"
 
@@ -200,10 +200,10 @@ def build_few_shot_prompt(problems, shot_qids, test_qid, args):
 def build_prompt(problems, test_qid, args):
 
     # test example
-    question = get_question_text(problems[test_qid])
-    context = get_context_text(problems[test_qid], args.use_caption)
-    choice = get_choice_text(problems[test_qid], args.options)
-    answer = get_answer(problems[test_qid], args.options)
+    question = get_question_text(problems[test_qid]) # question
+    context = get_context_text(problems[test_qid], args.use_caption) # hint and image caption
+    choice = get_choice_text(problems[test_qid], args.options) # choices
+    answer = get_answer(problems[test_qid], args.options) # answer
     lecture = get_lecture_text(problems[test_qid])
     solution = get_solution_text(problems[test_qid])
 

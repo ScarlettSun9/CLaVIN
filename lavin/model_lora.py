@@ -25,9 +25,10 @@ from  torch.cuda.amp import autocast
 
 @dataclass
 class ModelArgs:
-    dim: int = 512
-    n_layers: int = 8
-    n_heads: int = 8
+    dim: int = 4096
+    n_layers: int = 32
+    n_heads: int = 32
+    # n_kv_heads: Optional[int] = None # llama2
     vocab_size: int = -1  # defined later by tokenizer
     multiple_of: int = 256  # make SwiGLU hidden layer size multiple of large power of 2
     norm_eps: float = 1e-5
@@ -78,12 +79,27 @@ def apply_rotary_emb(
     xk_out = torch.view_as_real(xk_ * freqs_cis).flatten(3)
     return xq_out.type_as(xq), xk_out.type_as(xk)
 
+# llama2
+def repeat_kv(x: torch.Tensor, n_rep: int) -> torch.Tensor:
+    """torch.repeat_interleave(x, dim=2, repeats=n_rep)"""
+    bs, slen, n_kv_heads, head_dim = x.shape
+    if n_rep == 1:
+        return x
+    return (
+        x[:, :, :, None, :]
+        .expand(bs, slen, n_kv_heads, n_rep, head_dim)
+        .reshape(bs, slen, n_kv_heads * n_rep, head_dim)
+    )
+
+
 class Attention(nn.Module):
     def __init__(self, args: ModelArgs):
-        super().__init__()
-
+        super().__init__()        
+        
+        # llama 1
         self.n_local_heads = args.n_heads
         self.head_dim = args.dim // args.n_heads
+        
 
         #modified bias for reparameterizing
         self.wq = Linear(
@@ -203,6 +219,7 @@ class Transformer_LoRA(nn.Module):
         self.freqs_cis = precompute_freqs_cis(self.params.dim // self.params.n_heads, self.params.max_seq_len * 2)
 
         self.backbone = clip.load('ViT-L/14')[0]
+
 
     def insert_image_embeds(self, examples, labels, image_embeds, prefix_img, prefix_nonimg, img_indicators):
         _bsz, seqlen,_ = examples.shape

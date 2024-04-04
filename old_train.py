@@ -146,8 +146,8 @@ def get_args_parser():
 def main(args):
     
     if args.distributed:
-        misc.init_distributed_mode(args) # Load all the arguments into distributed mode.
         print('🍋🍋🍋🍋🍋🍋🍋🍋🍋🍋🍋🍋🍋🍋🍋🍋🍋🍋🍋🍋🍋🍋🍋🍋🍋🍋')
+        misc.init_distributed_mode(args) # Load all the arguments into distributed mode.
 
     print('job dir: {}'.format(os.path.dirname(os.path.realpath(__file__))))
     # print("{}".format(args).replace(', ', ',\n')) ############### test test
@@ -171,8 +171,7 @@ def main(args):
         # dataset_train = InstrcutDataSet(args, 'all', args.llama_model_path, args.max_seq_len)
         dataset_train = PretrainDataSet(args, args.data_path, args.tokenizer_path, args.max_seq_len)
     else:
-        # dataset_train = ScienceQADataSet(args, 'train', args.llama_model_path, args.max_seq_len)
-        dataset_train = OA_Dataset(args, 'train', args.llama_model_path, args.max_seq_len)
+        dataset_train = ScienceQADataSet(args, 'train', args.llama_model_path, args.max_seq_len)
 
     print(dataset_train)
 
@@ -180,14 +179,19 @@ def main(args):
     num_tasks = misc.get_world_size()
     global_rank = misc.get_rank()
     
-    
+    """
     if args.distributed:
         sampler_train = torch.utils.data.DistributedSampler(
             dataset_train, num_replicas=num_tasks, rank=global_rank, shuffle=True
         )
+
         print("Sampler_train = %s" % str(sampler_train))
-    else:
-        pass
+    #else:
+        #pass
+    """
+    sampler_train = torch.utils.data.DistributedSampler(
+        dataset_train, num_replicas=num_tasks, rank=global_rank, shuffle=True)
+    print("Sampler_train = %s" % str(sampler_train))
     
     
 
@@ -198,12 +202,13 @@ def main(args):
         log_writer = None
 
         
-    
+    """
     if args.distributed:
         print('🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇🍇')
         data_loader_train = torch.utils.data.DataLoader(
             dataset_train,
             sampler = sampler_train,
+            shuffle=True,
             batch_size=args.batch_size,
             num_workers=args.num_workers,
             pin_memory=args.pin_mem,
@@ -222,7 +227,16 @@ def main(args):
             generator=g,
         )
     # If sampler_train: sampler=sampler_train should be added to data_loader_train
-    
+    """
+    data_loader_train = torch.utils.data.DataLoader(
+            dataset_train,
+            sampler = sampler_train,
+            batch_size=args.batch_size,
+            num_workers=args.num_workers,
+            pin_memory=args.pin_mem,
+            drop_last=True,
+            generator=g,
+        )
 
     
     # define the model
@@ -236,7 +250,7 @@ def main(args):
     model.to(device)
     
     
-    
+    print(model.named_parameters())
     
     """
     #for debug.   print the data type.
@@ -265,7 +279,7 @@ def main(args):
     print("accumulate grad iterations: %d" % args.accum_iter)
     print("effective batch size: %d" % eff_batch_size)
     
-    
+    """
     if args.distributed:
         print('🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊')
         print('🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊')
@@ -274,9 +288,16 @@ def main(args):
         print('🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊')
         print('🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊')
         print('🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊🍉🍇🫐🍋🍊☂️🌊')
+        time.sleep(10)
         model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu],find_unused_parameters=True)
         model_without_ddp = model.module
+    """
     
+    
+    
+    
+    model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu],find_unused_parameters=True)
+    model_without_ddp = model.module
     
     
     # following timm: set wd as 0 for bias and norm layers
@@ -293,9 +314,7 @@ def main(args):
 
     print(f"Start training for {args.epochs} epochs")
     start_time = time.time()
-    
-    
-    for epoch in range(args.start_epoch, args.start_epoch+args.epochs):
+    for epoch in range(args.start_epoch, args.epochs):
 
         if args.distributed:
             data_loader_train.sampler.set_epoch(epoch)

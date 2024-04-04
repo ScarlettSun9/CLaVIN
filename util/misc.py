@@ -236,8 +236,8 @@ def init_distributed_mode(args):
         args.distributed = False
         return
 
-    args.distributed = False ############################ Here change distributed to false
-    return ############################################## and return directly.
+    # args.distributed = False ############################ Here change distributed to false
+    # return ############################################## and return directly.
 
     torch.cuda.set_device(args.gpu)
     args.dist_backend = 'nccl'
@@ -246,8 +246,11 @@ def init_distributed_mode(args):
 
     torch.distributed.init_process_group(backend=args.dist_backend, init_method=args.dist_url,
                                          world_size=args.world_size, rank=args.rank)
+    
     torch.distributed.barrier()
     setup_for_distributed(args.rank == 0)
+    
+    initialize_model_parallel(model_parallel_size_=torch.cuda.device_count())
 
 
 class NativeScalerWithGradNormCount:
@@ -299,9 +302,14 @@ def save_model(args, epoch, model, model_without_ddp, optimizer, loss_scaler):
     epoch_name = str(epoch)
     model_without_ddp.eval()
     trainable = {}
-    for n, p in model.named_parameters():
-        if 'adapter' in n:
-            trainable[n] = p.data
+    if args.peft_type == 'lora':
+        for n, p in model.named_parameters():
+            if 'lora' in n:
+                trainable[n] = p.data
+    else:
+        for n, p in model.named_parameters():
+            if 'adapter' in n:
+                trainable[n] = p.data
     # if loss_scaler is not None:
     checkpoint_paths = [output_dir / ('checkpoint-%s.pth' % epoch_name)]
     for checkpoint_path in checkpoint_paths:
